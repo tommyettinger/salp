@@ -1,0 +1,26 @@
+# Build and Release Folders
+
+build/
+target/
+*.class
+*.iml
+.idea/
+.settings/
+
+*.jar
+
+# javadoc
+*.html
+*.css
+
+# Gradle
+.gradle/
+gradle/
+gradlew.bat
+gradlew
+
+# jEdit garbage
+*~
+*#*#
+*#*.*#
+/bin/
