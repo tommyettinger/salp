@@ -468,7 +468,7 @@ public class OrderedMap<K, V> implements SortedMap<K, V>, Serializable, Cloneabl
         final int pos = first;
         order.removeIndex(0);
         if(order.size > 0)
-            first = order.get(0);
+            first = order.first();
         else
             first = -1;
         // Abbreviated version of fixPointers(pos)
@@ -552,7 +552,7 @@ public class OrderedMap<K, V> implements SortedMap<K, V>, Serializable, Cloneabl
             return;
         order.moveToLast(i);
         if (first == i) {
-            first = order.get(0);
+            first = order.first();
             //first = (int) link[i];
             // Special case of SET_PREV( link[ first ], -1 );
             //link[first] |= (-1 & 0xFFFFFFFFL) << 32;
@@ -906,7 +906,7 @@ public class OrderedMap<K, V> implements SortedMap<K, V>, Serializable, Cloneabl
         }
         order.removeValue(i);
         if (first == i) {
-            first = order.get(0);
+            first = order.first();
             //first = (int) link[i];
             /*
             if (0 <= first) {
@@ -2451,7 +2451,7 @@ public class OrderedMap<K, V> implements SortedMap<K, V>, Serializable, Cloneabl
         if(size < 2)
             return this;
         order.shuffle(rng);
-        first = order.get(0);
+        first = order.first();
         last = order.peek();
         return this;
     }
@@ -2475,7 +2475,7 @@ public class OrderedMap<K, V> implements SortedMap<K, V>, Serializable, Cloneabl
     public OrderedMap<K, V> reorder(int... ordering)
     {
         order.reorder(ordering);
-        first = order.get(0);
+        first = order.first();
         last = order.peek();
         return this;
     }

@@ -57,6 +57,43 @@ public class Compatibility {
         }
         return r;
     }
+    /**
+     * Stupidly simple convenience method that produces a range from start to end, not including end, as an int array.
+     * @param start the inclusive lower bound on the range
+     * @param end the exclusive upper bound on the range
+     * @param step the distance between ints in the range (doesn't apply to indices in the returned array)
+     * @return the range of ints as an int array
+     */
+    public static int[] range(int start, int end, int step)
+    {
+        if(end - start <= 0 || step < 1)
+            return new int[0];
+        int[] r = new int[(end - start + step - 1) / step];
+        for (int i = start, j = 0; i < end; i += step) {
+            r[j++] = i;
+        }
+        return r;
+    }
+
+    /**
+     * Stupidly simple convenience method that produces a range from start to end, not including end, as an int array.
+     * @param basis the array to insert into; will be modified
+     * @param insertAt the first position to modify in basis
+     * @param start the inclusive lower bound on the range
+     * @param end the exclusive upper bound on the range
+     * @param step the distance between ints in the range (doesn't apply to indices of basis)
+     * @return the range of ints as an int array, equivalent to the new value of basis
+     */
+    public static int[] rangeInto(int[] basis, int insertAt, int start, int end, int step)
+    {
+        if(basis == null || end - start <= 0 || step < 1)
+            return basis;
+        int insertStop = (end - start + step - 1) / step + insertAt;
+        for (int i = start; i < end && insertAt < insertStop; i += step) {
+            basis[insertAt++] = i;
+        }
+        return basis;
+    }
 
     /**
      * Gets the first item in an Iterable of T, or null if it is empty. Meant for collections like LinkedHashSet, which
