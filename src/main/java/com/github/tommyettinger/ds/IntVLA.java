@@ -172,7 +172,8 @@ public class IntVLA implements Serializable, Cloneable {
      * {@code ordering[ordering.length - 1]}. If ordering is smaller than this IntVLA, only the indices up to the
      * length of ordering will be modified. If ordering is larger than this IntVLA, only as many indices will be
      * affected as this IntVLA's size, and reversed distances are measured from the end of this IntVLA instead of the
-     * end of ordering. Duplicate values in ordering will produce duplicate values in the returned IntVLA.
+     * end of ordering. Duplicate values in ordering are invalid, and may produce problematic iteration for
+     * OrderedMap and OrderedSet collections this is used with, but there's nothing to detect duplicates here.
      * <br>
      * This method modifies this IntVLA in-place and also returns it for chaining.
      *

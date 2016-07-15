@@ -1699,9 +1699,17 @@ public class OrderedSet<K> implements SortedSet<K>, java.io.Serializable, Clonea
     public K getAt(final int idx) {
         if (idx < 0 || idx >= order.size)
             return null;
-        final K[] key = this.key;
-        // The starting point.
         return key[order.get(idx)];
+    }
+
+    public List<K> manyAt(final int... indices) {
+        if (indices == null)
+            return null;
+        ArrayList<K> found = new ArrayList<>(indices.length);
+        for (int i = 0, idx; i < indices.length; i++) {
+            found.add(getAt(indices[i]));
+        }
+        return found;
     }
 
     /**

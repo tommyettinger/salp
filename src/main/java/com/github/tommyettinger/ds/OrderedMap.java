@@ -2584,4 +2584,35 @@ public class OrderedMap<K, V> implements SortedMap<K, V>, Serializable, Cloneabl
         }
         return vals;
     }
+
+    public List<V> manyValuesAt(final int... indices) {
+        if (indices == null)
+            return null;
+        ArrayList<V> found = new ArrayList<>(indices.length);
+        for (int i = 0, idx; i < indices.length; i++) {
+            found.add(getAt(indices[i]));
+        }
+        return found;
+    }
+
+    public List<K> manyKeysAt(final int... indices) {
+        if (indices == null)
+            return null;
+        ArrayList<K> found = new ArrayList<>(indices.length);
+        for (int i = 0, idx; i < indices.length; i++) {
+            found.add(keyAt(indices[i]));
+        }
+        return found;
+    }
+
+    public List<Entry<K, V>> manyAt(final int... indices) {
+        if (indices == null)
+            return null;
+        ArrayList<Entry<K, V>> found = new ArrayList<>(indices.length);
+        for (int i = 0, idx; i < indices.length; i++) {
+            found.add(entryAt(indices[i]));
+        }
+        return found;
+    }
+
 }

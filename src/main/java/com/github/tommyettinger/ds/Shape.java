@@ -2,13 +2,17 @@ package com.github.tommyettinger.ds;
 
 import com.github.tommyettinger.util.Compatibility;
 
+import java.io.Serializable;
+
 /**
  * Created by Tommy Ettinger on 7/14/2016.
  */
-public class Shape {
+public class Shape implements Serializable, Indexer<int[]> {
+    private static final long serialVersionUID = 0L;
     protected final int[] dimensions;
     public final int rank, max;
-    public static final double __ = Double.POSITIVE_INFINITY;
+    private int[] allRange = null;
+    public static final int __ = Integer.MIN_VALUE;
     public Shape()
     {
         rank = 1;
@@ -32,6 +36,7 @@ public class Shape {
             max = m;
         }
     }
+    /*
     public int at(int... coordinates)
     {
         if(coordinates == null || coordinates.length != rank)
@@ -45,15 +50,20 @@ public class Shape {
         }
         return idx;
     }
-    public int[] partialAt(double... coordinates)
+    */
+    @Override
+    public int[] at(int... coordinates)
     {
         if(coordinates == null || coordinates.length <= 0)
         {
-            return Compatibility.range(max);
+            if(allRange != null)
+                return allRange;
+            else
+                return (allRange = Compatibility.range(max));
         }
-        int sz = 1, i = 0, start = 0, end = max, step = 1, mul = 1, fixed = 0;
+        int sz = 1, i = 0, mul = 1, fixed = 0;
         for (; i < rank && i < coordinates.length; i++) {
-            if(coordinates[i] == __)
+            if(coordinates[i] < 0)
                 sz *= dimensions[i];
             else
                 fixed += coordinates[i] * mul;
@@ -66,7 +76,7 @@ public class Shape {
         int[][] cart = new int[rank][];
         mul = 1;
         for (int j = 0; j < rank; j++) {
-            if(j >= coordinates.length || coordinates[j] == __)
+            if(j >= coordinates.length || coordinates[j] < 0)
             {
                 cart[j] = Compatibility.range(0, dimensions[j] * mul, mul);
             }
@@ -105,5 +115,13 @@ public class Shape {
         int[] copy = new int[rank];
         System.arraycopy(dimensions, 0, copy, 0, rank);
         return copy;
+    }
+
+    public int[] getOrder()
+    {
+        if(allRange != null)
+            return allRange;
+        else
+            return (allRange = Compatibility.range(max));
     }
 }
