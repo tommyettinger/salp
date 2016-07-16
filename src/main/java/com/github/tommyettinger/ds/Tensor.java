@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Tensors are the construction in math that generalizes vectors and matrices; this one is generic.
@@ -12,8 +13,9 @@ import java.util.Collections;
 public class Tensor<T> implements Serializable {
     private static final long serialVersionUID = 0L;
     public ArrayList<T> data;
-    public Shape shape;
+    protected Shape shape;
     public T defaultValue = null;
+    public boolean wrapBounds = false;
     private Tensor()
     {
         data = null;
@@ -21,57 +23,129 @@ public class Tensor<T> implements Serializable {
     }
     public Tensor(Collection<T> data, Shape shape)
     {
-        this.data = new ArrayList<>(data);
+        if(data == null)
+            this.data = new ArrayList<>();
+        else
+            this.data = new ArrayList<>(data);
         this.shape = shape;
+    }
+    public Tensor(Collection<T> data, Shape shape, T defaultValue)
+    {
+        if(data == null)
+            this.data = new ArrayList<>();
+        else
+            this.data = new ArrayList<>(data);
+        this.shape = shape;
+        this.defaultValue = defaultValue;
+    }
+
+    public Tensor(Collection<T> data, Shape shape, boolean wrap)
+    {
+        if(data == null)
+            this.data = new ArrayList<>();
+        else
+            this.data = new ArrayList<>(data);
+        this.shape = shape;
+        wrapBounds = wrap;
     }
     public Tensor(T[] data, Shape shape)
     {
         if(data == null)
-            return;
-        this.data = new ArrayList<>(data.length);
-        Collections.addAll(this.data, data);
+            this.data = new ArrayList<>();
+        else {
+            this.data = new ArrayList<>(data.length);
+            Collections.addAll(this.data, data);
+        }
         this.shape = shape;
     }
     public Tensor(T[] data, Shape shape, T defaultValue)
     {
         if(data == null)
-            return;
-        this.data = new ArrayList<>(data.length);
-        Collections.addAll(this.data, data);
+            this.data = new ArrayList<>();
+        else {
+            this.data = new ArrayList<>(data.length);
+            Collections.addAll(this.data, data);
+        }
         this.shape = shape;
         this.defaultValue = defaultValue;
     }
-    public ArrayList<T> get(int... index)
+    public Tensor(T[] data, Shape shape, boolean wrap)
     {
-        if (shape == null)
+        if(data == null)
+            this.data = new ArrayList<>();
+        else {
+            this.data = new ArrayList<>(data.length);
+            Collections.addAll(this.data, data);
+        }
+        this.shape = shape;
+        wrapBounds = wrap;
+    }
+    public List<T> fetch(int... index)
+    {
+        if (shape == null || index == null)
         {
             return new ArrayList<>(0);
         }
         int[] indices = shape.at(index);
+        int sz = data.size();
         ArrayList<T> found = new ArrayList<>(indices.length);
-        for (int i = 0, idx; i < indices.length; i++) {
-            idx = indices[i];
-            if(idx >= 0 && idx < data.size())
-                found.add(data.get(idx));
-            else
-                found.add(defaultValue);
+        if(wrapBounds)
+        {
+            for (int i = 0; i < indices.length; i++) {
+                found.add(data.get((indices[i] % sz + sz) % sz));
+            }
+        }
+        else
+        {
+            for (int i = 0, idx; i < indices.length; i++) {
+                idx = indices[i];
+                if(idx >= 0 && idx < sz)
+                    found.add(data.get(idx));
+                else
+                    found.add(defaultValue);
+            }
+
         }
         return found;
     }
-    public T[] getInto(T[] existing, int... index)
+    public T[] fetchInto(T[] existing, int... index)
     {
-        if (shape == null || existing == null)
+        if (shape == null || index == null || existing == null)
         {
             return existing;
         }
         int[] indices = shape.at(index);
-        for (int i = 0, idx; i < indices.length && i < existing.length; i++) {
-            idx = indices[i];
-            if(idx >= 0 && idx < data.size())
-                existing[i] = data.get(idx);
-            else
-                existing[i] = defaultValue;
+        int sz = data.size();
+        if(wrapBounds)
+        {
+            for (int i = 0; i < indices.length && i < existing.length; i++) {
+                existing[i] = data.get((indices[i] % sz + sz) % sz);
+            }
+        }
+        else
+        {
+            for (int i = 0, idx; i < indices.length && i < existing.length; i++) {
+                idx = indices[i];
+                if(idx >= 0 && idx < sz)
+                    existing[i] = data.get(idx);
+                else
+                    existing[i] = defaultValue;
+            }
         }
         return existing;
     }
+    /*
+
+    private ArrayList<T> loopingRepeat(ArrayList<T> basis, int length)
+    {
+        ArrayList<T> next = new ArrayList<>(basis);
+        int start = next.size(), curr;
+        for (curr = start; curr + start < length; curr += start)
+        {
+            next.addAll(basis);
+        }
+        next.addAll(basis.subList(0, length - curr));
+        return next;
+    }
+     */
 }
