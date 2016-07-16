@@ -134,6 +134,40 @@ public class Tensor<T> implements Serializable {
         }
         return existing;
     }
+
+    public ArrayList<T> getData() {
+        return data;
+    }
+
+    public void setData(ArrayList<T> data) {
+        if(data != null)
+            this.data = data;
+    }
+
+    public Shape getShape() {
+        return shape;
+    }
+
+    public void setShape(Shape shape) {
+        if(shape != null)
+            this.shape = shape;
+    }
+
+    public T getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(T defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    public boolean isWrapBounds() {
+        return wrapBounds;
+    }
+
+    public void setWrapBounds(boolean wrapBounds) {
+        this.wrapBounds = wrapBounds;
+    }
     /*
 
     private ArrayList<T> loopingRepeat(ArrayList<T> basis, int length)
