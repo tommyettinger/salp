@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class Tensor<T> implements Serializable {
     private static final long serialVersionUID = 0L;
-    public ArrayList<T> data;
+    protected ArrayList<T> data;
     protected Shape shape;
     public T defaultValue = null;
     public boolean wrapBounds = false;
@@ -80,13 +80,24 @@ public class Tensor<T> implements Serializable {
         this.shape = shape;
         wrapBounds = wrap;
     }
+    public T at(int... index) {
+        int idx = shape.at(index), sz = data.size();
+        if (wrapBounds) {
+            return data.get((idx % sz + sz) % sz);
+        } else {
+            if(idx >= 0 && idx < sz)
+                return data.get(idx);
+            return defaultValue;
+        }
+    }
+
     public List<T> fetch(int... index)
     {
         if (shape == null || index == null)
         {
             return new ArrayList<>(0);
         }
-        int[] indices = shape.at(index);
+        int[] indices = shape.multipleAt(index);
         int sz = data.size();
         ArrayList<T> found = new ArrayList<>(indices.length);
         if(wrapBounds)
@@ -114,7 +125,7 @@ public class Tensor<T> implements Serializable {
         {
             return existing;
         }
-        int[] indices = shape.at(index);
+        int[] indices = shape.multipleAt(index);
         int sz = data.size();
         if(wrapBounds)
         {

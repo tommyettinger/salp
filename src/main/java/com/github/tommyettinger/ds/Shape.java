@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * Created by Tommy Ettinger on 7/14/2016.
  */
-public class Shape implements Serializable, Indexer<int[]> {
+public class Shape implements Serializable, Indexer<int[]>, MultipleIndexer<int[]> {
     private static final long serialVersionUID = 0L;
     protected final int[] dimensions;
     public final int rank, max;
@@ -36,7 +36,7 @@ public class Shape implements Serializable, Indexer<int[]> {
             max = m;
         }
     }
-    /*
+    @Override
     public int at(int... coordinates)
     {
         if(coordinates == null || coordinates.length != rank)
@@ -50,9 +50,9 @@ public class Shape implements Serializable, Indexer<int[]> {
         }
         return idx;
     }
-    */
+
     @Override
-    public int[] at(int... coordinates)
+    public int[] multipleAt(int... coordinates)
     {
         if(coordinates == null || coordinates.length <= 0)
         {
@@ -63,7 +63,7 @@ public class Shape implements Serializable, Indexer<int[]> {
         }
         int sz = 1, i = 0, mul = 1, fixed = 0;
         for (; i < rank && i < coordinates.length; i++) {
-            if(coordinates[i] < 0)
+            if(coordinates[i] < 0 || coordinates[i] >= dimensions[i])
                 sz *= dimensions[i];
             else
                 fixed += coordinates[i] * mul;
@@ -76,7 +76,7 @@ public class Shape implements Serializable, Indexer<int[]> {
         int[][] cart = new int[rank][];
         mul = 1;
         for (int j = 0; j < rank; j++) {
-            if(j >= coordinates.length || coordinates[j] < 0)
+            if(j >= coordinates.length || coordinates[j] < 0 || coordinates[j] >= dimensions[j])
             {
                 cart[j] = Compatibility.range(0, dimensions[j] * mul, mul);
             }
@@ -124,4 +124,5 @@ public class Shape implements Serializable, Indexer<int[]> {
         else
             return (allRange = Compatibility.range(max));
     }
+
 }
