@@ -1856,4 +1856,16 @@ public class OrderedSet<K> implements SortedSet<K>, java.io.Serializable, Clonea
                 return alterEntry(pos, replacement);
         }
     }
+    /**
+     * Makes a OrderedSet (OS) of T given an array or vararg of T elements. Duplicate items in elements will have
+     * all but one item discarded, using the later item in elements.
+     * @param elements an array or vararg of T
+     * @param <T> just about any non-primitive type
+     * @return a newly-allocated OrderedSet containing all of the non-duplicate items in elements, in order
+     */
+    @SafeVarargs
+    public static <T> OrderedSet<T> make(T... elements) {
+        if(elements == null) return null;
+        return new OrderedSet<T>(elements);
+    }
 }

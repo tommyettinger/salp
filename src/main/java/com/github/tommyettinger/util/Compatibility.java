@@ -1,5 +1,7 @@
 package com.github.tommyettinger.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -111,5 +113,28 @@ public class Compatibility {
             return it.next();
         return null;
     }
+    /**
+     * Makes an ArrayList of T given an array or vararg of T elements.
+     * @param elements an array or vararg of T
+     * @param <T> just about any non-primitive type
+     * @return a newly-allocated ArrayList containing all of elements, in order
+     */
+    @SafeVarargs
+    public static <T> ArrayList<T> makeList(T... elements) {
+        if(elements == null) return null;
+        ArrayList<T> list = new ArrayList<>(elements.length);
+        Collections.addAll(list, elements);
+        return list;
+    }
 
+    public static <T> ArrayList<T> reorder (ArrayList<T> list, int... ordering) {
+        int ol;
+        if (ordering == null || (ol = Math.min(list.size(), ordering.length)) == 0)
+            return list;
+        ArrayList<T> alt = new ArrayList<>(ol);
+        for (int i = 0; i < ol; i++) {
+            alt.add(list.get((ordering[i] % ol + ol) % ol));
+        }
+        return alt;
+    }
 }
