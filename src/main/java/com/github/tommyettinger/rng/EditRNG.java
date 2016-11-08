@@ -49,7 +49,7 @@ package com.github.tommyettinger.rng;
  * @author Tommy Ettinger
  */
 public class EditRNG extends StatefulRNG {
-
+    protected static final double DOUBLE_UNIT = 1.0 / (1L << 53);
     /**
      * Used to tweak the generator toward high or low values.
      */

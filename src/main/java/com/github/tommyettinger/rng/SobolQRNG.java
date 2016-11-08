@@ -98,8 +98,8 @@ public class SobolQRNG implements RandomnessSource {
      */
     public SobolQRNG(final int dimension) throws ArithmeticException {
         if (dimension < 1 || dimension > MAX_DIMENSION) {
-            throw new ArithmeticException("Dimension " + dimension + "is outside the GWT-compatible range of" +
-                    "[1, 16]; did you want the GWT-incompatible two-argument constructor?");
+            throw new ArithmeticException("Dimension " + dimension + "is outside the valid range; " +
+                    "16 is the highest allowed");
         }
 
         this.dimension = dimension;

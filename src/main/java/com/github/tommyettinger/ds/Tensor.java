@@ -80,6 +80,7 @@ public class Tensor<T> implements Serializable {
         this.shape = shape;
         wrapBounds = wrap;
     }
+
     public T at(int... index) {
         int idx = shape.at(index), sz = data.size();
         if (wrapBounds) {
