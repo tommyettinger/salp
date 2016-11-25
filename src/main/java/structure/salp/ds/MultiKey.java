@@ -22,7 +22,7 @@ import java.util.SortedSet;
 @SuppressWarnings("unchecked")
 public class MultiKey {
     public final int keyCount;
-    Arrangement[] keys;
+    MirrorSet[] keys;
 
     /**
      * Constructs an empty MultiKey.
@@ -52,9 +52,9 @@ public class MultiKey {
     public MultiKey(int keyCount, int expected, float f)
     {
         this.keyCount = keyCount;
-        keys = new Arrangement[keyCount];
+        keys = new MirrorSet[keyCount];
         for (int i = 0; i < keyCount; i++) {
-            keys[i] = new Arrangement(expected, f);
+            keys[i] = new MirrorSet(expected, f);
         }
     }
 
@@ -67,12 +67,12 @@ public class MultiKey {
     public MultiKey(Collection<Iterable> keysets) {
         if (keysets == null) {
             keyCount = 0;
-            keys = new Arrangement[0];
+            keys = new MirrorSet[0];
         } else {
             keyCount = keysets.size();
-            keys = new Arrangement[keyCount];
+            keys = new MirrorSet[keyCount];
             for (int i = 0; i < keyCount; i++) {
-                keys[i] = new Arrangement();
+                keys[i] = new MirrorSet();
             }
             putAll(keysets);
         }
@@ -83,29 +83,29 @@ public class MultiKey {
         if(other == null)
         {
             keyCount = 0;
-            keys = new Arrangement[0];
+            keys = new MirrorSet[0];
         }
         else
         {
             keyCount = other.keyCount;
-            keys = new Arrangement[keyCount];
+            keys = new MirrorSet[keyCount];
             for (int i = 0; i < keyCount; i++) {
-                keys[i] = new Arrangement(other.keys[i]);
+                keys[i] = new MirrorSet(other.keys[i]);
             }
         }
     }
 
-    public MultiKey(Arrangement[] keysets)
+    public MultiKey(MirrorSet[] keysets)
     {
         if(keysets == null)
         {
             keyCount = 0;
-            keys = new Arrangement[0];
+            keys = new MirrorSet[0];
         }
         else
         {
             keyCount = keysets.length;
-            keys = new Arrangement[keyCount];
+            keys = new MirrorSet[keyCount];
             int minLength = Integer.MAX_VALUE;
             for (int k = 0; k < keyCount; k++) {
                 if(keysets[k] == null)

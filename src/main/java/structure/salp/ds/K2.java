@@ -18,16 +18,16 @@ import java.util.SortedSet;
 
 public class K2<A, B>
 {
-    Arrangement<A> keysA;
-    Arrangement<B> keysB;
+    MirrorSet<A> keysA;
+    MirrorSet<B> keysB;
 
     /**
      * Constructs an empty K2.
      */
     public K2()
     {
-        keysA = new Arrangement<>();
-        keysB = new Arrangement<>();
+        keysA = new MirrorSet<>();
+        keysB = new MirrorSet<>();
     }
 
     /**
@@ -37,8 +37,8 @@ public class K2<A, B>
      */
     public K2(int expected)
     {
-        keysA = new Arrangement<>(expected);
-        keysB = new Arrangement<>(expected);
+        keysA = new MirrorSet<>(expected);
+        keysB = new MirrorSet<>(expected);
     }
 
     /**
@@ -50,8 +50,8 @@ public class K2<A, B>
      */
     public K2(int expected, float f)
     {
-        keysA = new Arrangement<>(expected, f);
-        keysB = new Arrangement<>(expected, f);
+        keysA = new MirrorSet<>(expected, f);
+        keysB = new MirrorSet<>(expected, f);
     }
 
     /**
@@ -62,8 +62,8 @@ public class K2<A, B>
      */
     public K2(Iterable<A> aKeys, Iterable<B> bKeys)
     {
-        keysA = new Arrangement<>();
-        keysB = new Arrangement<>();
+        keysA = new MirrorSet<>();
+        keysB = new MirrorSet<>();
         if(aKeys != null && bKeys != null)
             putAll(aKeys, bKeys);
     }
@@ -72,22 +72,22 @@ public class K2<A, B>
     {
         if(other == null)
         {
-            keysA = new Arrangement<>();
-            keysB = new Arrangement<>();
+            keysA = new MirrorSet<>();
+            keysB = new MirrorSet<>();
         }
         else
         {
-            keysA = new Arrangement<>(other.keysA);
-            keysB = new Arrangement<>(other.keysB);
+            keysA = new MirrorSet<>(other.keysA);
+            keysB = new MirrorSet<>(other.keysB);
         }
     }
 
-    public K2(Arrangement<A> aItems, Arrangement<B> bItems)
+    public K2(MirrorSet<A> aItems, MirrorSet<B> bItems)
     {
         if(aItems == null || bItems == null)
         {
-            keysA = new Arrangement<>();
-            keysB = new Arrangement<>();
+            keysA = new MirrorSet<>();
+            keysB = new MirrorSet<>();
         }
         else
         {
