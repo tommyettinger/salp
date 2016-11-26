@@ -59,7 +59,7 @@ import java.util.Map.Entry;
  * @author Sebastiano Vigna (responsible for all the hard parts)
  * @author Tommy Ettinger (mostly responsible for squashing several layers of parent classes into one monster class)
  */
-public class MirrorBag<K> extends AbstractList<K> implements Serializable, Cloneable {
+public class MirrorBag<K> extends AbstractList<K> implements Serializable, Cloneable, RandomAccess {
     private static final long serialVersionUID = 0L;
     /**
      * The array of keys.
@@ -192,7 +192,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         value = new IntVLA[vs];
         IntVLA t;
         for (int i = 0; i < vs; i++) {
-            if((t = a.value[i]) != null)
+            if ((t = a.value[i]) != null)
                 value[i] = new IntVLA(t);
         }
         order.addAll(a.order);
@@ -203,7 +203,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
      * Creates a new MirrorSet using the elements of an array.
      *
      * @param keyArray the array of keys of the new MirrorSet.
-     * @param f the load factor.
+     * @param f        the load factor.
      * @throws IllegalArgumentException if <code>k</code> and <code>v</code> have different lengths.
      */
     public MirrorBag(final K[] keyArray, final float f) {
@@ -221,19 +221,19 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
     public MirrorBag(final Collection<K> keyColl) {
         this(keyColl, DEFAULT_LOAD_FACTOR);
     }
+
     /**
      * Creates a new MirrorSet using the given collection of keys and a load factor.
      *
      * @param keyColl the collection of keys of the new MirrorSet.
-     * @param f the load factor.
+     * @param f       the load factor.
      * @throws IllegalArgumentException if <code>k</code> and <code>v</code> have different lengths.
      */
     public MirrorBag(final Collection<? extends K> keyColl, final float f) {
         this(keyColl.size(), f);
         Iterator<? extends K> ki = keyColl.iterator();
         int idx = 0;
-        while (ki.hasNext())
-        {
+        while (ki.hasNext()) {
             put(ki.next(), idx++);
         }
     }
@@ -255,7 +255,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
      *
      * @param expected the expected number of elements in the hash set.
      * @param f        the load factor.
-     * @param hasher used to hash items; typically only needed when K is an array, where CrossHash has implementations
+     * @param hasher   used to hash items; typically only needed when K is an array, where CrossHash has implementations
      */
     @SuppressWarnings("unchecked")
     public MirrorBag(final int expected, final float f, CrossHash.IHasher hasher) {
@@ -271,11 +271,12 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         order = new IntVLA(expected);
         this.hasher = (hasher == null) ? CrossHash.defaultHasher : hasher;
     }
+
     /**
      * Creates a new MirrorSet with 0.5f as load factor.
      *
      * @param expected the expected number of elements in the MirrorSet.
-     * @param hasher used to hash items; typically only needed when K is an array, where CrossHash has implementations
+     * @param hasher   used to hash items; typically only needed when K is an array, where CrossHash has implementations
      */
     public MirrorBag(final int expected, CrossHash.IHasher hasher) {
         this(expected, DEFAULT_LOAD_FACTOR, hasher);
@@ -292,8 +293,8 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
      * Creates a new MirrorSet using the elements of two parallel arrays.
      *
      * @param keyArray the array of keys of the new MirrorSet.
-     * @param f the load factor.
-     * @param hasher used to hash items; typically only needed when K is an array, where CrossHash has implementations
+     * @param f        the load factor.
+     * @param hasher   used to hash items; typically only needed when K is an array, where CrossHash has implementations
      * @throws IllegalArgumentException if <code>k</code> and <code>v</code> have different lengths.
      */
     public MirrorBag(final K[] keyArray, final float f, CrossHash.IHasher hasher) {
@@ -302,11 +303,12 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         for (int i = 0; i < keyArray.length; i++)
             put(keyArray[i], i);
     }
+
     /**
      * Creates a new MirrorSet with 0.5f as load factor using the elements of two parallel arrays.
      *
      * @param keyArray the array of keys of the new MirrorSet.
-     * @param hasher used to hash items; typically only needed when K is an array, where CrossHash has implementations
+     * @param hasher   used to hash items; typically only needed when K is an array, where CrossHash has implementations
      * @throws IllegalArgumentException if <code>k</code> and <code>v</code> have different lengths.
      */
     public MirrorBag(final K[] keyArray, CrossHash.IHasher hasher) {
@@ -322,19 +324,19 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
     public MirrorBag(final Collection<K> keyColl, CrossHash.IHasher hasher) {
         this(keyColl, DEFAULT_LOAD_FACTOR, hasher);
     }
+
     /**
      * Creates a new MirrorSet using the given collection of keys and a load factor.
      *
      * @param keyColl the collection of keys of the new MirrorSet.
-     * @param f the load factor.
+     * @param f       the load factor.
      * @throws IllegalArgumentException if <code>k</code> and <code>v</code> have different lengths.
      */
     public MirrorBag(final Collection<? extends K> keyColl, final float f, CrossHash.IHasher hasher) {
         this(keyColl.size(), f, hasher);
         Iterator<? extends K> ki = keyColl.iterator();
         int idx = 0;
-        while (ki.hasNext())
-        {
+        while (ki.hasNext()) {
             put(ki.next(), idx++);
         }
     }
@@ -343,11 +345,13 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
     private int realSize() {
         return containsNullKey ? size - 1 : size;
     }
+
     private void ensureCapacity(final int capacity) {
         final int needed = arraySize(capacity, f);
         if (needed > n)
             rehash(needed);
     }
+
     private void tryCapacity(final long capacity) {
         final int needed = (int) Math.min(
                 1 << 30,
@@ -356,6 +360,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         if (needed > n)
             rehash(needed);
     }
+
     private boolean removeEntry(final int pos) {
         size--;
         fixOrder(pos);
@@ -366,6 +371,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
             rehash(n / 2);
         return true;
     }
+
     private boolean removeNullEntry() {
         containsNullKey = false;
         key[n] = null;
@@ -377,21 +383,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
             rehash(n / 2);
         return true;
     }
-    /* TODO
-    public void putAll(Map<? extends K, ? extends Integer> m) {
-        if (f <= .5)
-            ensureCapacity(m.size()); // The resulting map will be sized for
-            // m.size() elements
-        else
-            tryCapacity(size() + m.size()); // The resulting map will be
-        int n = m.size(), idx = size;
-        final Iterator<? extends K> i = m
-                .keySet().iterator();
-        while (n-- != 0) {
-            put(i.next(), idx++);
-        }
-    }
-    */
+
     public void addAll(K[] keyArray) {
         if (f <= .5)
             ensureCapacity(keyArray.length); // The resulting map will be sized for
@@ -406,18 +398,19 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
 
     @Override
     public boolean addAll(Collection<? extends K> keyArray) {
-        if(keyArray == null || keyArray.isEmpty())
+        if (keyArray == null || keyArray.isEmpty())
             return false;
         if (f <= .5)
             ensureCapacity(keyArray.size()); // The resulting map will be sized for
             // m.size() elements
         else
-            tryCapacity(size() + keyArray.size()); // The resulting map will be
+            tryCapacity(size() + keyArray.size());
         Iterator<? extends K> it = keyArray.iterator();
         while (it.hasNext())
-            add(it.next()); // value arguments to put are disregarded
+            add(it.next());
         return true;
     }
+
     private int insert(final K k, final int v) {
         int pos;
         if (k == null) {
@@ -444,12 +437,13 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         }
         order.add(pos);
         IntVLA vp = value[pos];
-        if(vp == null) vp = new IntVLA(1);
+        if (vp == null) vp = new IntVLA(1);
         vp.add(size);
         if (size++ >= maxFill)
             rehash(arraySize(size + 1, f));
         return -1;
     }
+
     private int insertAt(final K k, final int at) {
         int pos;
         if (k == null) {
@@ -463,8 +457,8 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
                 if (!curr.equals(k)) {
                     while ((curr = key[pos = (pos + 1) & mask]) != null)
                         if (curr.equals(k)) {
-                        break;
-                    }
+                            break;
+                        }
                 }
             }
         }
@@ -476,7 +470,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         }
         order.insert(at, pos);
         IntVLA vp = value[pos];
-        if(vp == null) vp = new IntVLA(1);
+        if (vp == null) vp = new IntVLA(1);
         vp.add(at);
         fixValues();
         if (size++ >= maxFill)
@@ -495,8 +489,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         return true;
     }
 
-    protected void fixValues()
-    {
+    protected void fixValues() {
         for (int i = 0; i < order.size; i++) {
             value[order.items[i]].clear();
         }
@@ -509,17 +502,13 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
      * Shifts left entries with the specified hash code, starting at the
      * specified position, and empties the resulting free entry.
      *
-     * @param pos
-     *            a starting position.
+     * @param pos a starting position.
      */
     protected final void shiftKeys(int pos) {
         IntVLA cv;
-        if((cv = value[pos]) != null)
-        {
-            if(order.removeValue(pos))
-            {
-                if(cv.size-- <= 1)
-                {
+        if ((cv = value[pos]) != null) {
+            if (order.removeValue(pos)) {
+                if (cv.size-- <= 1) {
                     key[pos] = null;
                     value[pos] = null;
                     fixOrder(pos);
@@ -528,6 +517,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
             }
         }
     }
+
     @SuppressWarnings("unchecked")
     public boolean remove(final Object k) {
         if ((K) k == null) {
@@ -550,13 +540,13 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
                 return removeEntry(pos);
         }
     }
+
     /**
      * Removes the mapping associated with the first key in iteration order.
      *
      * @return the value previously associated with the first key in iteration
-     *         order.
-     * @throws NoSuchElementException
-     *             is this map is empty.
+     * order.
+     * @throws NoSuchElementException is this map is empty.
      */
     public K removeFirst() {
         if (size == 0)
@@ -564,7 +554,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         final int pos = first;
         K fst = key[pos];
         order.removeIndex(0);
-        if(order.size > 0)
+        if (order.size > 0)
             first = order.get(0);
         else
             first = -1;
@@ -586,13 +576,13 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
             rehash(n >> 1);
         return fst;
     }
+
     /**
      * Removes the mapping associated with the last key in iteration order.
      *
      * @return the value previously associated with the last key in iteration
-     *         order.
-     * @throws NoSuchElementException
-     *             is this map is empty.
+     * order.
+     * @throws NoSuchElementException is this map is empty.
      */
     public K removeLast() {
         if (size == 0)
@@ -600,7 +590,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         final int pos = last;
         K lst = key[pos];
         order.pop();
-        if(order.size > 0)
+        if (order.size > 0)
             last = order.get(order.size - 1);
         else
             last = -1;
@@ -624,8 +614,9 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
             rehash(n / 2);
         return lst;
     }
+
     private void moveIndexToFirst(final int i) {
-        if(size <= 1 || first == i)
+        if (size <= 1 || first == i)
             return;
         order.moveToFirst(i);
         if (last == i) {
@@ -646,8 +637,9 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         first = i;
         fixValues();
     }
+
     private void moveIndexToLast(final int i) {
-        if(size <= 1 || last == i)
+        if (size <= 1 || last == i)
             return;
         order.moveToLast(i);
         if (first == i) {
@@ -668,6 +660,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         last = i;
         fixValues();
     }
+
     public IntVLA getIndices(final Object k) {
         if (k == null)
             return containsNullKey ? value[n] : defRetValue;
@@ -708,6 +701,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
                 return true;
         }
     }
+
     public boolean containIndex(final int v) {
         return v >= 0 && v < size;
     }
@@ -756,26 +750,30 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
     final class MapEntry
             implements
             Entry<K, IntVLA> {
-        // TODO: index should refer to ordering position instead of modified hash
         int index;
+
         MapEntry(final int index) {
             this.index = index;
         }
+
         MapEntry() {
         }
+
         public K getKey() {
             return key[index];
         }
+
         /**
          * {@inheritDoc}
          *
          * @deprecated Please use the corresponding type-specific method
-         *             instead.
+         * instead.
          */
         @Deprecated
         public IntVLA getValue() {
             return value[index];
         }
+
         public IntVLA setValue(final IntVLA v) {
             final IntVLA oldValue = value[index];
             value[index] = v;
@@ -792,10 +790,12 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
                     : key[index].equals(e.getKey()))
                     && (value[index] == e.getValue());
         }
+
         public int hashCode() {
             return (key[index] == null ? 0 : hasher.hash(key[index]))
                     ^ value[index].hashCode();
         }
+
         public String toString() {
             return key[index] + "=>" + value[index];
         }
@@ -822,6 +822,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
 
     /**
      * Modifies the link vector for a shift from s to d.
+     *
      * @param s the source position.
      * @param d the destination position.
      */
@@ -829,17 +830,13 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         if (size == 1) {
             first = last = d;
             order.set(0, d);
-        }
-        else if (first == s) {
+        } else if (first == s) {
             first = d;
             order.set(0, d);
-        }
-        else if (last == s) {
+        } else if (last == s) {
             last = d;
             order.set(order.size - 1, d);
-        }
-        else
-        {
+        } else {
             order.set(order.indexOf(s), d);
         }
     }
@@ -854,6 +851,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
             throw new NoSuchElementException();
         return key[first];
     }
+
     /**
      * Returns the last key of this map in iteration order.
      *
@@ -864,6 +862,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
             throw new NoSuchElementException();
         return key[last];
     }
+
     /**
      * Retains in this collection only elements from the given collection.
      *
@@ -885,8 +884,8 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
 
     /**
      * A list iterator over a MirrorSet.
-     *
-     * <P>
+     * <p>
+     * <p>
      * This class provides a list iterator over a MirrorSet. The
      * constructor runs in constant time.
      */
@@ -914,10 +913,12 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
          * created using the nonempty constructor.
          */
         int index = 0;
+
         private MapIterator() {
             next = first;
             index = 0;
         }
+
         /*
         private MapIterator(final K from) {
             if (((from) == null)) {
@@ -953,9 +954,11 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         public boolean hasNext() {
             return next != -1;
         }
+
         public boolean hasPrevious() {
             return prev != -1;
         }
+
         private void ensureIndexKnown() {
             if (index >= 0)
                 return;
@@ -973,30 +976,34 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
                 index++;
             }*/
         }
+
         public int nextIndex() {
             ensureIndexKnown();
             return index + 1;
         }
+
         public int previousIndex() {
             ensureIndexKnown();
             return index - 1;
         }
+
         public int nextEntry() {
             if (!hasNext())
                 throw new NoSuchElementException();
             curr = next;
-            if(++index >= order.size)
+            if (++index >= order.size)
                 next = -1;
             else
                 next = order.get(index);//(int) link[curr];
             prev = curr;
             return curr;
         }
+
         public int previousEntry() {
             if (!hasPrevious())
                 throw new NoSuchElementException();
             curr = prev;
-            if(--index < 1)
+            if (--index < 1)
                 prev = -1;
             else
                 prev = order.get(index - 1);
@@ -1004,22 +1011,23 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
             next = curr;
             return curr;
         }
+
         public void remove() {
             ensureIndexKnown();
             if (curr == -1)
                 throw new IllegalStateException();
             if (curr == prev) {
-				/*
+                /*
 				 * If the last operation was a next(), we are removing an entry
 				 * that precedes the current index, and thus we must decrement
 				 * it.
 				 */
-                if(--index >= 1)
+                if (--index >= 1)
                     prev = order.get(index - 1); //(int) (link[curr] >>> 32);
                 else
                     prev = -1;
             } else {
-                if(index < order.size - 1)
+                if (index < order.size - 1)
                     next = order.get(index + 1);
                 else
                     next = -1;
@@ -1045,9 +1053,9 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
                 final K[] key = MirrorBag.this.key;
                 // We have to horribly duplicate the shiftKeys() code because we
                 // need to update next/prev.
-                for (;;) {
+                for (; ; ) {
                     pos = ((last = pos) + 1) & mask;
-                    for (;;) {
+                    for (; ; ) {
                         if ((curr = key[pos]) == null) {
                             key[last] = null;
                             fixValues();
@@ -1069,12 +1077,14 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
                 }
             }
         }
+
         public int skip(final int n) {
             int i = n;
             while (i-- != 0 && hasNext())
                 nextEntry();
             return n - i - 1;
         }
+
         public int back(final int n) {
             int i = n;
             while (i-- != 0 && hasPrevious())
@@ -1090,53 +1100,66 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
 
         public EntryIterator() {
         }
+
         public MapEntry next() {
             entry.index = nextEntry();
             return entry;
         }
+
         public MapEntry previous() {
             entry.index = previousEntry();
             return entry;
         }
+
         public void set(Map.Entry<K, IntVLA> ok) {
             throw new UnsupportedOperationException();
         }
+
         public void add(Map.Entry<K, IntVLA> ok) {
             throw new UnsupportedOperationException();
         }
     }
+
     private final class MapEntrySet
             implements Cloneable, SortedSet<Entry<K, IntVLA>>, Set<Entry<K, IntVLA>>, Collection<Entry<K, IntVLA>>, Serializable {
         private static final long serialVersionUID = 0L;
+
         public Iterator<Map.Entry<K, IntVLA>> iterator() {
             return new EntryIterator();
         }
+
         public Comparator<? super Entry<K, IntVLA>> comparator() {
             return null;
         }
+
         public SortedSet<Entry<K, IntVLA>> subSet(
                 Entry<K, IntVLA> fromElement,
                 Entry<K, IntVLA> toElement) {
             throw new UnsupportedOperationException();
         }
+
         public SortedSet<Entry<K, IntVLA>> headSet(
                 Entry<K, IntVLA> toElement) {
             throw new UnsupportedOperationException();
         }
+
         public SortedSet<Entry<K, IntVLA>> tailSet(
                 Entry<K, IntVLA> fromElement) {
             throw new UnsupportedOperationException();
         }
+
         public Entry<K, IntVLA> first() {
             if (size == 0)
                 throw new NoSuchElementException();
             return new MapEntry(MirrorBag.this.first);
         }
+
         public Entry<K, IntVLA> last() {
             if (size == 0)
                 throw new NoSuchElementException();
             return new MapEntry(MirrorBag.this.last);
         }
+
         @SuppressWarnings("unchecked")
         public boolean contains(final Object o) {
             if (!(o instanceof Entry))
@@ -1163,6 +1186,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
                     return value[pos] == v;
             }
         }
+
         @SuppressWarnings("unchecked")
         public boolean remove(final Object o) {
             if (!(o instanceof Entry))
@@ -1202,9 +1226,11 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
                 }
             }
         }
+
         public int size() {
             return size;
         }
+
         public void clear() {
             MirrorBag.this.clear();
         }
@@ -1337,20 +1363,44 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
      */
     public final class KeyIterator extends MapIterator implements ListIterator<K>, Serializable {
         private static final long serialVersionUID = 0L;
+
         public K previous() {
             return key[previousEntry()];
         }
+
         public void set(K k) {
             throw new UnsupportedOperationException();
         }
+
         public void add(K k) {
             throw new UnsupportedOperationException();
         }
-        public KeyIterator() {}
+
+        public KeyIterator() {
+        }
+
+        public KeyIterator(int index) {
+            if (index < 0 || index >= size)
+                throw new IllegalArgumentException("KeyIterator index is out of bounds; max allowed is " + (size - 1) + " (cannot be negative), but was given " + index);
+            this.index = index;
+            curr = order.get(index);
+            if (index == 0)
+                prev = -1;
+            else
+                prev = order.get(index - 1);
+            if (index == size - 1)
+                next = -1;
+            else
+                next = order.get(index + 1);
+        }
+
         public K next() {
             return key[nextEntry()];
         }
-        public void remove() { super.remove(); }
+
+        public void remove() {
+            super.remove();
+        }
     }
 
     public final class KeySet implements SortedSet<K>, Serializable {
@@ -1465,6 +1515,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
 
         /**
          * Always throws an UnsupportedOperationException.
+         *
          * @param c disregarded; always throws Exception
          * @return nothing; always throws Exception
          */
@@ -1483,6 +1534,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
                 return false;
             return containsAll(s);
         }
+
         /**
          * Unwraps an iterator into an array starting at a given offset for a given number of elements.
          * <p>
@@ -1544,8 +1596,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         return keys;
     }
 
-    public OrderedSet<K> keysAsOrderedSet()
-    {
+    public OrderedSet<K> keysAsOrderedSet() {
         OrderedSet<K> os = new OrderedSet<K>(size, f, hasher);
         for (int i = 0; i < size; i++) {
             os.add(get(i));
@@ -1600,15 +1651,14 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
 
     /**
      * Rehashes the map.
-     *
-     * <P>
+     * <p>
+     * <p>
      * This method implements the basic rehashing strategy, and may be overriden
      * by subclasses implementing different rehashing strategies (e.g.,
      * disk-based rehashing). However, you should not override this method
      * unless you understand the internal workings of this class.
      *
-     * @param newN
-     *            the new size
+     * @param newN the new size
      */
 
     @SuppressWarnings("unchecked")
@@ -1631,9 +1681,9 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
             newKey[pos] = key[i];
             newValue[pos] = value[i];
             order.set(q, pos);
-            if(i == originalFirst)
+            if (i == originalFirst)
                 first = pos;
-            if(i == originalLast)
+            if (i == originalLast)
                 last = pos;
         }
         n = newN;
@@ -1642,10 +1692,11 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         this.key = newKey;
         this.value = newValue;
     }
+
     /**
      * Returns a deep copy of this map.
-     *
-     * <P>
+     * <p>
+     * <p>
      * This method performs a deep copy of this MirrorSet; the data stored in the
      * map, however, is not cloned. Note that this makes a difference only for
      * object keys.
@@ -1665,7 +1716,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
             c.value = new IntVLA[vs];
             IntVLA t;
             for (int i = 0; i < vs; i++) {
-                if((t = value[i]) != null)
+                if ((t = value[i]) != null)
                     c.value[i] = new IntVLA(t);
             }
             c.order = (IntVLA) order.clone();
@@ -1676,6 +1727,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
                     "; " + cantHappen.getMessage() : ""));
         }
     }
+
     /**
      * Returns a hash code for this map.
      *
@@ -1683,7 +1735,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
      */
     public int hashCode() {
         int h = 0;
-        for (int j = realSize(), i = 0, t = 0; j-- != 0;) {
+        for (int j = realSize(), i = 0, t = 0; j-- != 0; ) {
             while (key[i] == null)
                 i++;
             if (this != key[i])
@@ -1697,6 +1749,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
             h += value[n].hashCode();
         return h;
     }
+
     /**
      * Returns the maximum number of entries that can be filled before rehashing.
      *
@@ -1907,35 +1960,39 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         }
     }
 
-    /** Unwraps an iterator into an array starting at a given offset for a given number of elements.
-     *
+    /**
+     * Unwraps an iterator into an array starting at a given offset for a given number of elements.
+     * <p>
      * <P>This method iterates over the given type-specific iterator and stores the elements returned, up to a maximum of <code>length</code>, in the given array starting at <code>offset</code>. The
      * number of actually unwrapped elements is returned (it may be less than <code>max</code> if the iterator emits less than <code>max</code> elements).
      *
-     * @param i a type-specific iterator.
-     * @param array an array to contain the output of the iterator.
+     * @param i      a type-specific iterator.
+     * @param array  an array to contain the output of the iterator.
      * @param offset the first element of the array to be returned.
-     * @param max the maximum number of elements to unwrap.
-     * @return the number of elements unwrapped. */
-    private static <K> int objectUnwrap(final Iterator<? extends K> i, final K array[], int offset, final int max ) {
-        if ( max < 0 ) throw new IllegalArgumentException( "The maximum number of elements (" + max + ") is negative" );
-        if ( offset < 0 || offset + max > array.length ) throw new IllegalArgumentException();
+     * @param max    the maximum number of elements to unwrap.
+     * @return the number of elements unwrapped.
+     */
+    private static <K> int objectUnwrap(final Iterator<? extends K> i, final K array[], int offset, final int max) {
+        if (max < 0) throw new IllegalArgumentException("The maximum number of elements (" + max + ") is negative");
+        if (offset < 0 || offset + max > array.length) throw new IllegalArgumentException();
         int j = max;
-        while ( j-- != 0 && i.hasNext() )
-            array[ offset++ ] = i.next();
+        while (j-- != 0 && i.hasNext())
+            array[offset++] = i.next();
         return max - j - 1;
     }
 
-    /** Unwraps an iterator into an array.
-     *
+    /**
+     * Unwraps an iterator into an array.
+     * <p>
      * <P>This method iterates over the given type-specific iterator and stores the elements returned in the given array. The iteration will stop when the iterator has no more elements or when the end
      * of the array has been reached.
      *
-     * @param i a type-specific iterator.
+     * @param i     a type-specific iterator.
      * @param array an array to contain the output of the iterator.
-     * @return the number of elements unwrapped. */
-    private static <K> int objectUnwrap(final Iterator<? extends K> i, final K array[] ) {
-        return objectUnwrap(i, array, 0, array.length );
+     * @return the number of elements unwrapped.
+     */
+    private static <K> int objectUnwrap(final Iterator<? extends K> i, final K array[]) {
+        return objectUnwrap(i, array, 0, array.length);
     }
 
     @Override
@@ -1952,10 +2009,12 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         s.append("}");
         return s.toString();
     }
+
     public SortedSet<Entry<K, IntVLA>> entrySet() {
         if (entries == null) entries = new MapEntrySet();
         return entries;
     }
+
     @Override
     public boolean equals(Object o) {
         if (o == this)
@@ -1975,11 +2034,12 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         final KeyIterator i = new KeyIterator();
         s.defaultWriteObject();
         s.writeObject(hasher);
-        for (int j = size, e; j-- != 0;) {
+        for (int j = size, e; j-- != 0; ) {
             e = i.nextEntry();
             s.writeObject(key[e]);
         }
     }
+
     @GwtIncompatible
     @SuppressWarnings("unchecked")
     private void readObject(java.io.ObjectInputStream s)
@@ -1996,13 +2056,14 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         first = last = -1;
         K k;
         int v;
-        for (int i = size, pos; i-- != 0;) {
+        for (int i = size, pos; i-- != 0; ) {
             add((K) s.readObject());
         }
     }
 
     /**
      * Gets the key at the given index in the iteration order in constant time (random-access).
+     *
      * @param idx the index in the iteration order of the key to fetch
      * @return the key at the index, if the index is valid, otherwise null
      */
@@ -2016,11 +2077,11 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
 
     /**
      * Gets the key-value Map.Entry at the given index in the iteration order in constant time (random-access).
+     *
      * @param idx the index in the iteration order of the entry to fetch
      * @return the key-value entry at the index, if the index is valid, otherwise null
      */
-    public Entry<K, IntVLA> entryAt(final int idx)
-    {
+    public Entry<K, IntVLA> entryAt(final int idx) {
         if (idx < 0 || idx >= order.size)
             return null;
         return new MapEntry(order.get(idx));
@@ -2029,6 +2090,7 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
     /**
      * Removes the key and value at the given index in the iteration order in not-exactly constant time (though it still
      * should be efficient).
+     *
      * @param idx the index in the iteration order of the key and value to remove
      * @return the key removed, if there was anything removed, or null otherwise
      */
@@ -2052,12 +2114,13 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
     /**
      * Equivalent to {@link #add(Object)}, except that it can place k at any point in the ordering (shifting up later
      * entries and changing their values to match their new positions in the ordering).
+     *
      * @param idx the position in the ordering to place k at; will not be used if negative or greater than the current size (it can be equal to the current size)
-     * @param k the key to add into this MirrorSet; its value will be idx
+     * @param k   the key to add into this MirrorSet; its value will be idx
      * @return the previous position in the ordering that k had if already present, the previous size of the MirrorSet if k was just added now, or -1 if idx is invalid
      */
     public boolean insert(final int idx, final K k) {
-        if(idx < 0 || idx > size)
+        if (idx < 0 || idx > size)
             return false;
         final int pos = insertAt(k, idx);
         final IntVLA oldValue = value[pos];
@@ -2067,34 +2130,34 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
 
     /**
      * Gets a random key from this MirrorSet in constant time, using the given RNG to generate a random number.
+     *
      * @param rng used to generate a random index for a key
      * @return a random key from this MirrorSet, or null if this is empty
      */
-    public K randomItem(RNG rng)
-    {
-        if(rng == null)
+    public K randomItem(RNG rng) {
+        if (rng == null)
             return null;
         return get(rng.nextInt(order.size));
     }
 
     /**
      * Gets a random entry from this MirrorSet in constant time, using the given RNG to generate a random number.
+     *
      * @param rng used to generate a random index for a entry
      * @return a random key-value entry from this MirrorSet
      */
-    public Entry<K, IntVLA> randomEntry(RNG rng)
-    {
+    public Entry<K, IntVLA> randomEntry(RNG rng) {
         return new MapEntry(order.getRandomElement(rng));
     }
 
     /**
      * Randomly alters the iteration order for this MirrorSet using the given RNG to shuffle.
+     *
      * @param rng used to generate a random ordering
      * @return this for chaining
      */
-    public MirrorBag<K> shuffle(RNG rng)
-    {
-        if(size < 2)
+    public MirrorBag<K> shuffle(RNG rng) {
+        if (size < 2)
             return this;
         order.shuffle(rng);
         first = order.get(0);
@@ -2115,13 +2178,13 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
      * the end of ordering. Duplicate values in ordering will produce duplicate values in the returned Map.
      * <br>
      * This method modifies this MirrorSet in-place and also returns it for chaining.
+     *
      * @param ordering an array or varargs of int indices, where the nth item in ordering changes the nth item in this
      *                 Map to have the value currently in this Map at the index specified by the value in ordering
      * @return this for chaining, after modifying it in-place
      */
-    public MirrorBag<K> reorder(int... ordering)
-    {
-        if(ordering == null || ordering.length <= 0)
+    public MirrorBag<K> reorder(int... ordering) {
+        if (ordering == null || ordering.length <= 0)
             return this;
         order.reorder(ordering);
         first = order.get(0);
@@ -2130,36 +2193,31 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
         return this;
     }
 
-    public IntVLA getMany(Iterable<K> keys)
-    {
-        if(keys == null)
+    public IntVLA getMany(Iterable<K> keys) {
+        if (keys == null)
             return new IntVLA();
         IntVLA vals = new IntVLA();
-        for(K k : keys)
-        {
+        for (K k : keys) {
             vals.addAll(getIndices(k));
         }
         return vals;
     }
 
-    public ArrayList<K> keysAt(int... positions)
-    {
-        if(keys == null || positions == null || positions.length <= 0)
+    public ArrayList<K> keysAt(int... positions) {
+        if (keys == null || positions == null || positions.length <= 0)
             return new ArrayList<K>();
         ArrayList<K> ks = new ArrayList<>(positions.length);
-        for(int i = 0; i < positions.length; i++)
-        {
+        for (int i = 0; i < positions.length; i++) {
             ks.add(get(positions[i]));
         }
         return ks;
     }
-    public ArrayList<K> keysAt(IntVLA positions)
-    {
-        if(keys == null || positions == null || positions.size <= 0)
+
+    public ArrayList<K> keysAt(IntVLA positions) {
+        if (keys == null || positions == null || positions.size <= 0)
             return new ArrayList<K>();
         ArrayList<K> ks = new ArrayList<>(positions.size);
-        for(int i = 0; i < positions.size; i++)
-        {
+        for (int i = 0; i < positions.size; i++) {
             ks.add(get(positions.get(i)));
         }
         return ks;
@@ -2168,16 +2226,85 @@ public class MirrorBag<K> extends AbstractList<K> implements Serializable, Clone
     /**
      * Produces a copy of this MirrorSet, but only using up to the given amount of items to take. Does a shallow copy
      * of individual keys, so the references will be shared.
+     *
      * @param amount the number of items to copy from this MirrorSet; will copy all items if greater than size
      * @return a new MirrorSet with up to amount items copied from this into it.
      */
-    public MirrorBag<K> take(int amount)
-    {
+    public MirrorBag<K> take(int amount) {
         amount = Math.min(size, Math.max(0, amount));
         MirrorBag<K> nx = new MirrorBag<>(amount, f);
         for (int i = 0; i < amount; i++) {
             nx.add(get(i));
         }
         return nx;
+    }
+
+    @Override
+    public K set(int index, K element) {
+        K oldValue = remove(index);
+        insertAt(element, index);
+        return oldValue;
+    }
+
+    @Override
+    public void add(int index, K element) {
+        insertAt(element, index);
+    }
+
+    @Override
+    public int indexOf(Object o) {
+        return getIndices(o).first();
+    }
+
+    @Override
+    public int lastIndexOf(Object o) {
+        return getIndices(o).peek();
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends K> c) {
+        boolean modified = super.addAll(index, c);
+        if (modified)
+            fixValues();
+        return modified;
+    }
+
+    @Override
+    public ListIterator<K> listIterator() {
+        return new KeyIterator();
+    }
+
+    @Override
+    public ListIterator<K> listIterator(int index) {
+        return new KeyIterator(index);
+    }
+
+    @Override
+    public List<K> subList(int fromIndex, int toIndex) {
+        return super.subList(fromIndex, toIndex);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Object[] toArray() {
+        K[] items = (K[]) (new Object[size]);
+        objectUnwrap(listIterator(), items);
+        return items;
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+        objectUnwrap(listIterator(), a);
+        return a;
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        return super.containsAll(c);
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        return super.removeAll(c);
     }
 }
